@@ -71,3 +71,14 @@ jobs:
             --region "$AWS_REGION" \
             --query 'services[0].{Desired:desiredCount,Running:runningCount,Pending:pendingCount,Status:status}' \
             --output table
+
+      - name: Health check live application
+        run: |
+          URL=$(aws elbv2 describe-load-balancers \
+            --region "$AWS_REGION" \
+            --query 'LoadBalancers[?contains(LoadBalancerName, `cloudlaunch`)].DNSName | [0]' \
+            --output text)
+
+          echo "Checking http://$URL/health"
+          curl --fail --silent --show-error "http://$URL/health"
+          echo
