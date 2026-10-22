@@ -6,3 +6,20 @@ __pycache__/
 .env.*
 !.env.example
 *.log
+
+# Terraform local state
+**/.terraform/*
+**/*.tfstate
+**/*.tfstate.*
+**/.terraform.tfstate.lock.info
+**/crash.log
+**/crash.*.log
+
+# Terraform variable files
+**/*.tfvars
+**/*.tfvars.json
+
+# Local environment/secrets
+.env
+.env.*
+!.env.example
