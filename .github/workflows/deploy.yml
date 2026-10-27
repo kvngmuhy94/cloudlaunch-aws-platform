@@ -74,7 +74,27 @@ jobs:
             --cluster "$ECS_CLUSTER" \
             --services "$ECS_SERVICE" \
             --region "$AWS_REGION"
+      - name: Verify deployment completed without rollback
+        run: |
+          EXPECTED_ID="${{ steps.ecs_deploy.outputs.deployment_id }}"
 
+          read -r ACTUAL_ID STATE <<< "$(aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --region "$AWS_REGION" \
+            --query 'services[0].deployments[?status==`PRIMARY`] | [0].[id,rolloutState]' \
+            --output text)"
+
+          echo "Expected deployment: $EXPECTED_ID"
+          echo "Current deployment: $ACTUAL_ID"
+          echo "Rollout state: $STATE"
+
+          if [[ "$ACTUAL_ID" != "$EXPECTED_ID" || "$STATE" != "COMPLETED" ]]; then
+            echo "::error::ECS deployment did not complete successfully or was rolled back"
+            exit 1
+          fi
+
+          echo "ECS deployment completed successfully without rollback"
       - name: Verify ECS service
         run: |
           aws ecs describe-services \
