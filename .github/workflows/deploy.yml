@@ -50,12 +50,23 @@ jobs:
             .
 
       - name: Force ECS deployment
+        id: ecs_deploy
         run: |
-          aws ecs update-service \
+          DEPLOYMENT_ID=$(aws ecs update-service \
             --cluster "$ECS_CLUSTER" \
             --service "$ECS_SERVICE" \
             --force-new-deployment \
-            --region "$AWS_REGION"
+            --region "$AWS_REGION" \
+            --query "service.deployments[?status=='PRIMARY'].id | [0]" \
+            --output text)
+
+          if [ -z "$DEPLOYMENT_ID" ] || [ "$DEPLOYMENT_ID" = "None" ]; then
+            echo "Failed to capture ECS deployment ID"
+            exit 1
+          fi
+
+          echo "deployment_id=$DEPLOYMENT_ID" >> "$GITHUB_OUTPUT"
+          echo "Started ECS deployment: $DEPLOYMENT_ID"
 
       - name: Wait for ECS service stability
         run: |
