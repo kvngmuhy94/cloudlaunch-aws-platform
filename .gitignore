@@ -23,3 +23,10 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# Temporary workflow backups
+.github/workflows/*.backup
+.github/workflows/*.before-fix
+
+# Terraform plan output
+plan-output.txt
